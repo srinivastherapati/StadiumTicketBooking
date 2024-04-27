@@ -16,6 +16,7 @@ public class TimeSlotController {
     @Autowired
     private TimeSlotService timeSlotService;
 
+
     @PostMapping("/add")
     public ResponseEntity<?> addTimeSlot(@RequestBody TimeSlot timeSlot) {
         try {

@@ -20,4 +20,5 @@ public class TimeSlot {
     private Instant endTime;
    // @DocumentReference
     private String  stadiumName;
+    private String scheduleId;
 }

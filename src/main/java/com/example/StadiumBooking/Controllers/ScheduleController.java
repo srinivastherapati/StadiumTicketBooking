@@ -38,6 +38,7 @@ public class ScheduleController {
         }
         scheduleRepo.save(schedule);
 
+
         return ResponseEntity.status(HttpStatus.CREATED).body("scheduled successfully");
 
     }
@@ -51,7 +52,7 @@ public class ScheduleController {
         existingSchedule.get().setGameTitle(schedule.getGameTitle());
         existingSchedule.get().setNo_of_players_in_team(schedule.getNo_of_players_in_team());
         scheduleRepo.save(existingSchedule.get());
-        return ResponseEntity.status(HttpStatus.OK).body("schedule updated successfully");
+        return ResponseEntity.ok(existingSchedule);
 
     }
     @DeleteMapping("/delete/{id}")

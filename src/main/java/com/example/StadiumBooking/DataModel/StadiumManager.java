@@ -15,4 +15,5 @@ public class StadiumManager {
     private String phoneNumber;
     private  String password;
     private boolean approved;
+    private String role;
 }

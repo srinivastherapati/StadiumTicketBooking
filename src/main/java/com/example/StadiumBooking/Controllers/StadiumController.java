@@ -2,6 +2,8 @@ package com.example.StadiumBooking.Controllers;
 
 import com.example.StadiumBooking.DataModel.Admin;
 import com.example.StadiumBooking.DataModel.Stadium;
+import com.example.StadiumBooking.DataModel.StadiumManager;
+import com.example.StadiumBooking.repositeries.StadiumManagerRepo;
 import com.example.StadiumBooking.repositeries.StadiumRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,6 +50,7 @@ public class StadiumController {
         if(stadium==null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Stadium with name "+stadiumName+" does not exists");
         }
+
         stadiumRepo.delete(stadium);
            return ResponseEntity.status(HttpStatus.OK).body("Stadium with name "+stadiumName+" deleted successfully");
     }

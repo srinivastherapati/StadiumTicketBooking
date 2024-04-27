@@ -9,4 +9,5 @@ import java.util.List;
 public interface StadiumManagerRepo extends MongoRepository<StadiumManager,String> {
 StadiumManager findByEmail(String email);
 List<StadiumManager> findByApprovedFalse();
+StadiumManager findByStadiumName(String stadiumName);
 }

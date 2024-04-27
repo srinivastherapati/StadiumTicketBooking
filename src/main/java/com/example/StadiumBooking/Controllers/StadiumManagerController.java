@@ -72,7 +72,12 @@ public class StadiumManagerController {
        if(!isManagerExists.isApproved()){
            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("approval is pending can't login");
        }
-       return ResponseEntity.status(HttpStatus.OK).body("Logged in successfully");
+       stadiumManager.setRole("manager");
+       Map<String ,String> managerDetails= new HashMap<>();
+       managerDetails.put("email",stadiumManager.getEmail());
+       managerDetails.put("name",stadiumManager.getName());
+       managerDetails.put("role",stadiumManager.getRole());
+       return ResponseEntity.ok(managerDetails);
     }
     @PostMapping("/admin/approve")
     public ResponseEntity<?> getAllApprovalRequest(){

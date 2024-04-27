@@ -16,8 +16,9 @@ public class Bookings {
     private String  stadiumName;
     private Schedule schedule;
     private Instant bookingTime;
-    private List<String> seatNumbers;
+   // private List<String> seatNumbers;
     private  int no_of_seats;
     private int totalAmount;
     private String bookingStatus;
+    private String seatType;
 }

@@ -5,4 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface BookingsRepo extends MongoRepository<Bookings,String> {
 
+    Bookings findByStadiumName(String stadiumName);
+
 }

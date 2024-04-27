@@ -1,7 +1,6 @@
 package com.example.StadiumBooking.Controllers;
 
 import com.example.StadiumBooking.DataModel.Customers;
-import com.example.StadiumBooking.DataModel.StadiumManager;
 import com.example.StadiumBooking.repositeries.CustomersRepo;
 import com.example.StadiumBooking.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customer")
@@ -46,6 +48,11 @@ public class CustomerController {
         if(!existingUser.getPassword().equals(customers.getPassword())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("password email mismatch");
         }
-        return ResponseEntity.ok(customers.getEmail());
+        customers.setRole("user");
+        Map<String, String> customerDetails = new HashMap<>();
+        customerDetails.put("email", existingUser.getEmail());
+        customerDetails.put("role", existingUser.getRole());
+        customerDetails.put("name", existingUser.getName());
+        return ResponseEntity.ok(customerDetails);
     }
 }
