@@ -4,14 +4,17 @@ import com.example.StadiumBooking.DataModel.Schedule;
 import com.example.StadiumBooking.DataModel.Stadium;
 import com.example.StadiumBooking.repositeries.ScheduleRepo;
 import com.example.StadiumBooking.repositeries.StadiumRepo;
+import com.example.StadiumBooking.services.ScheduleService;
 import com.example.StadiumBooking.services.StadiumManagerService;
 import com.example.StadiumBooking.services.StadiumService;
-import com.example.StadiumBooking.services.TimeSlotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -24,9 +27,10 @@ public class ScheduleController {
     @Autowired
     private StadiumManagerService stadiumManagerService;
     @Autowired
-    private TimeSlotService timeSlotService;
-    @Autowired
     private StadiumRepo stadiumRepo;
+    @Autowired
+    private ScheduleService scheduleService;
+
     @PostMapping("/add")
     public ResponseEntity<?> addSchedule(@RequestBody Schedule schedule){
         boolean isStadiumExists=stadiumService.IsStadiumExists(schedule.getStadiumName());
@@ -39,6 +43,19 @@ public class ScheduleController {
         }
         if(schedule.getAwayTeam().equals(schedule.getHomeTeam())){
             return ResponseEntity.status(HttpStatus.CONFLICT).body("homeTeam and away team can't be same");
+        }
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        if (schedule.getStartTime().isBefore(currentTime) || schedule.getEndTime().isBefore(currentTime)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time or end time cannot be in the past");
+        }
+
+        if (schedule.getStartTime().isAfter(schedule.getEndTime())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time must be before end time");
+        }
+
+        if (scheduleService.isScheduleConflict(schedule)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Scheduling conflict with existing game in another stadium");
         }
         scheduleRepo.save(schedule);
 
@@ -68,16 +85,26 @@ public class ScheduleController {
         scheduleRepo.delete(existingSchedule.get());
         return ResponseEntity.status(HttpStatus.OK).body("deleted successfully");
     }
-    @GetMapping("/stadium/{stadiumId}/schedule")
-    public ResponseEntity<?> getSchedule(@PathVariable String stadiumId){
-        Optional<Stadium> existingStadium= stadiumRepo.findById(stadiumId);
-        if(existingStadium.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
+//    @GetMapping("/stadium/{stadiumId}/schedule")
+//    public ResponseEntity<?> getSchedule(@PathVariable String stadiumId){
+//        Optional<Stadium> existingStadium= stadiumRepo.findById(stadiumId);
+//        if(existingStadium.isEmpty()){
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
+//        }
+//        Schedule schedule= scheduleRepo.findByStadiumName(existingStadium.get().getName());
+//        if(schedule==null){
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("game not scheduled for this stadium");
+//        }
+//        return ResponseEntity.ok(schedule);
+//    }
+
+    @GetMapping("/stadium/{stadiumName}")
+    public ResponseEntity<List<Schedule>> getScheduledGamesByStadium(@PathVariable String stadiumName) {
+        List<Schedule> scheduledGames = scheduleRepo.findByStadiumName(stadiumName);
+        if (scheduledGames.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
         }
-        Schedule schedule= scheduleRepo.findByStadiumName(existingStadium.get().getName());
-        if(schedule==null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("game not scheduled for this stadium");
-        }
-        return ResponseEntity.ok(schedule);
+        return ResponseEntity.ok(scheduledGames);
     }
+
 }
