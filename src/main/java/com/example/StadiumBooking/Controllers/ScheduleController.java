@@ -1,7 +1,9 @@
 package com.example.StadiumBooking.Controllers;
 
 import com.example.StadiumBooking.DataModel.Schedule;
+import com.example.StadiumBooking.DataModel.Stadium;
 import com.example.StadiumBooking.repositeries.ScheduleRepo;
+import com.example.StadiumBooking.repositeries.StadiumRepo;
 import com.example.StadiumBooking.services.StadiumManagerService;
 import com.example.StadiumBooking.services.StadiumService;
 import com.example.StadiumBooking.services.TimeSlotService;
@@ -23,6 +25,8 @@ public class ScheduleController {
     private StadiumManagerService stadiumManagerService;
     @Autowired
     private TimeSlotService timeSlotService;
+    @Autowired
+    private StadiumRepo stadiumRepo;
     @PostMapping("/add")
     public ResponseEntity<?> addSchedule(@RequestBody Schedule schedule){
         boolean isStadiumExists=stadiumService.IsStadiumExists(schedule.getStadiumName());
@@ -63,5 +67,17 @@ public class ScheduleController {
         }
         scheduleRepo.delete(existingSchedule.get());
         return ResponseEntity.status(HttpStatus.OK).body("deleted successfully");
+    }
+    @GetMapping("/stadium/{stadiumId}/schedule")
+    public ResponseEntity<?> getSchedule(@PathVariable String stadiumId){
+        Optional<Stadium> existingStadium= stadiumRepo.findById(stadiumId);
+        if(existingStadium.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
+        }
+        Schedule schedule= scheduleRepo.findByStadiumName(existingStadium.get().getName());
+        if(schedule==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("game not scheduled for this stadium");
+        }
+        return ResponseEntity.ok(schedule);
     }
 }

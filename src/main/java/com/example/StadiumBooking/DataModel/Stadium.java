@@ -13,6 +13,7 @@ public class Stadium {
     private String stadiumType;
     private String  location;
     private int capacity;
+    private String imageUrl;
 
 }
 

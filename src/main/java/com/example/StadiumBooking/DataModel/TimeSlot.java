@@ -18,7 +18,7 @@ public class TimeSlot {
     private Date date;
     private Instant startTime;
     private Instant endTime;
-   // @DocumentReference
     private String  stadiumName;
-    private String scheduleId;
+
+
 }

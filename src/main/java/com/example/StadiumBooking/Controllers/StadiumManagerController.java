@@ -1,5 +1,6 @@
 package com.example.StadiumBooking.Controllers;
 
+import com.example.StadiumBooking.DataModel.Stadium;
 import com.example.StadiumBooking.DataModel.StadiumManager;
 import com.example.StadiumBooking.repositeries.StadiumManagerRepo;
 import com.example.StadiumBooking.repositeries.StadiumRepo;
@@ -79,10 +80,45 @@ public class StadiumManagerController {
        managerDetails.put("role",stadiumManager.getRole());
        return ResponseEntity.ok(managerDetails);
     }
-    @PostMapping("/admin/approve")
+    @PostMapping("/admin/approved")
     public ResponseEntity<?> getAllApprovalRequest(){
         List<StadiumManager> pendingApprovals=stadiumManagerService.getPendingRequest();
         return ResponseEntity.ok(pendingApprovals);
     }
+
+    @GetMapping("/stadium/{stadiumName}/managers")
+    public ResponseEntity<?> getStadiumManager(@PathVariable String stadiumName){
+        Stadium existingStadium=stadiumRepo.findByName(stadiumName);
+        if(existingStadium==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium with name "+ stadiumName + " does not exists");
+        }
+        StadiumManager manager=stadiumManagerRepository.findByStadiumName(stadiumName);
+        return ResponseEntity.ok(manager);
+    }
+
+    @GetMapping("/stadium/{stadiumId}/approvals")
+    public  ResponseEntity<?> getStadiumApprovals(@PathVariable String stadiumId){
+        Optional<Stadium> existingStadium= stadiumRepo.findById(stadiumId);
+        if(existingStadium.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
+        }
+        StadiumManager stadiumManager= stadiumManagerRepository.findByStadiumName(existingStadium.get().getName());
+
+            return ResponseEntity.ok(stadiumManager);
+    }
+
+    @PutMapping("/stadium/{stadiumId}/approvals")
+    public  ResponseEntity<?> editManagerApprovals(@PathVariable String stadiumId,@RequestBody StadiumManager stadiumManager){
+        Optional<Stadium> existingStadium= stadiumRepo.findById(stadiumId);
+        if(existingStadium.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
+        }
+        StadiumManager manager=stadiumManagerRepository.findByStadiumName(existingStadium.get().getName());
+        manager.setApproved(stadiumManager.isApproved());
+        stadiumManagerRepository.save(manager);
+        return ResponseEntity.ok(manager);
+    }
+
+
 
 }
