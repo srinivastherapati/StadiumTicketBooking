@@ -32,25 +32,9 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("password is required");
         }
         if(customerService.isUserExist(customers.getEmail())){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("user already registered with email "+customers.getEmail());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("customer already registered with email "+customers.getEmail());
         }
         customersRepo.save(customers);
-        return ResponseEntity.status(HttpStatus.CREATED).body("user registered successfully");
-    }
-    @PostMapping("login")
-    private ResponseEntity<?> customerLogin(@RequestBody Customers customers){
-        if(!customerService.isUserExist(customers.getEmail())){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found please register");
-        }
-        Customers existingUser=customersRepo.findByEmail(customers.getEmail());
-        if(!existingUser.getPassword().equals(customers.getPassword())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("password email mismatch");
-        }
-        customers.setRole("user");
-        Map<String, String> customerDetails = new HashMap<>();
-        customerDetails.put("email", existingUser.getEmail());
-        customerDetails.put("role", existingUser.getRole());
-        customerDetails.put("name", existingUser.getName());
-        return ResponseEntity.ok(customerDetails);
+        return ResponseEntity.status(HttpStatus.CREATED).body("customer registered successfully");
     }
 }

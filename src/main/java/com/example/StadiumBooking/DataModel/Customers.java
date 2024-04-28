@@ -13,7 +13,5 @@ public class Customers {
     private String email;
     private String password;
     private String phoneNumber;
-   // private String paymentInfo;
-    private boolean isPaid;
     private String role;
 }
