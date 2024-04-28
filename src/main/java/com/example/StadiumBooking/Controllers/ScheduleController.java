@@ -44,6 +44,9 @@ public class ScheduleController {
         if(schedule.getAwayTeam().equals(schedule.getHomeTeam())){
             return ResponseEntity.status(HttpStatus.CONFLICT).body("homeTeam and away team can't be same");
         }
+        if(schedule.getStartTime().equals(schedule.getEndTime())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("start and end time should be same");
+        }
 
         LocalDateTime currentTime = LocalDateTime.now();
         if (schedule.getStartTime().isBefore(currentTime) || schedule.getEndTime().isBefore(currentTime)) {
@@ -85,18 +88,6 @@ public class ScheduleController {
         scheduleRepo.delete(existingSchedule.get());
         return ResponseEntity.status(HttpStatus.OK).body("deleted successfully");
     }
-//    @GetMapping("/stadium/{stadiumId}/schedule")
-//    public ResponseEntity<?> getSchedule(@PathVariable String stadiumId){
-//        Optional<Stadium> existingStadium= stadiumRepo.findById(stadiumId);
-//        if(existingStadium.isEmpty()){
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
-//        }
-//        Schedule schedule= scheduleRepo.findByStadiumName(existingStadium.get().getName());
-//        if(schedule==null){
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("game not scheduled for this stadium");
-//        }
-//        return ResponseEntity.ok(schedule);
-//    }
 
     @GetMapping("/stadium/{stadiumName}")
     public ResponseEntity<List<Schedule>> getScheduledGamesByStadium(@PathVariable String stadiumName) {

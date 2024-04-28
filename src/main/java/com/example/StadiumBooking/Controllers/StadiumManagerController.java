@@ -114,6 +114,9 @@ public class StadiumManagerController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exists");
         }
         StadiumManager manager=stadiumManagerRepository.findByStadiumName(existingStadium.get().getName());
+        if(manager == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Stadium manager does not exists for this stadium");
+        }
         manager.setApproved(stadiumManager.isApproved());
         stadiumManagerRepository.save(manager);
         return ResponseEntity.ok(manager);
