@@ -19,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/schedule")
+@CrossOrigin
 public class ScheduleController {
     @Autowired
     private ScheduleRepo scheduleRepo;

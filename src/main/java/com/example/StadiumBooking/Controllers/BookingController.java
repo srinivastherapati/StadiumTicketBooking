@@ -17,6 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/bookings")
+@CrossOrigin
 public class BookingController {
     @Autowired
     private StadiumRepo stadiumRepo;
