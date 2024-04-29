@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Document(collection = "Schedule")
 @Data
@@ -19,11 +20,9 @@ public class Schedule {
     private String gameTitle;
     private String no_of_teams;
     private String no_of_players_in_team;
-    private Duration duration;
-    private String status;
     private String homeTeam;
     private String awayTeam;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private Date startTime;
+    private Date endTime;
 
 }

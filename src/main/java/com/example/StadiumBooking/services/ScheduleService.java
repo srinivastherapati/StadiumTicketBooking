@@ -5,6 +5,8 @@ import com.example.StadiumBooking.repositeries.ScheduleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -23,12 +25,24 @@ public class ScheduleService {
                 continue;
             }
 
-            if (existingSchedule.getStartTime().isBefore(newSchedule.getEndTime()) &&
-                    existingSchedule.getEndTime().isAfter(newSchedule.getStartTime())) {
+            if (existingSchedule.getStartTime().before(newSchedule.getEndTime()) &&
+                    existingSchedule.getEndTime().after(newSchedule.getStartTime())) {
                 // Conflict found
                 return true;
             }
         }
         return false; // No conflicts found
+    }
+    public  boolean checkScheduleConflictByStadium(String stadiumName, Date newStartTime, Date newEndDate){
+        List<Schedule> scheduleListByStadium=scheduleRepo.findByStadiumName(stadiumName);
+        if(scheduleListByStadium.isEmpty()){
+            return false;
+        }
+        for(Schedule schedule:scheduleListByStadium){
+            if(schedule.getStartTime().before(newEndDate) && schedule.getEndTime().after(newStartTime)){
+                return true;
+            }
+        }
+        return false;
     }
 }

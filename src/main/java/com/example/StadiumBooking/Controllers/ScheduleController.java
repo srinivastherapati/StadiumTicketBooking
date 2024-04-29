@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,17 +50,20 @@ public class ScheduleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("start and end time should be same");
         }
 
-        LocalDateTime currentTime = LocalDateTime.now();
-        if (schedule.getStartTime().isBefore(currentTime) || schedule.getEndTime().isBefore(currentTime)) {
+        Date currentTime = new Date();
+        if (schedule.getStartTime().before(currentTime) || schedule.getEndTime().before(currentTime)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time or end time cannot be in the past");
         }
 
-        if (schedule.getStartTime().isAfter(schedule.getEndTime())) {
+        if (schedule.getStartTime().after(schedule.getEndTime())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time must be before end time");
+        }
+        if(schedule.getStartTime().equals(schedule.getEndTime())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("start and end time shouldn't be same");
         }
 
         if (scheduleService.isScheduleConflict(schedule)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Scheduling conflict with existing game in another stadium");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Scheduling conflict with existing game");
         }
         scheduleRepo.save(schedule);
 
@@ -73,9 +77,26 @@ public class ScheduleController {
         if(existingSchedule.isEmpty()){
            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("schedule does not exists");
         }
-        existingSchedule.get().setDuration(schedule.getDuration());
-        existingSchedule.get().setGameTitle(schedule.getGameTitle());
-        existingSchedule.get().setNo_of_players_in_team(schedule.getNo_of_players_in_team());
+        Date currentTime = new Date();
+        if (schedule.getStartTime().before(currentTime) || schedule.getEndTime().before(currentTime)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time or end time cannot be in the past");
+        }
+
+        if (schedule.getStartTime().after(schedule.getEndTime())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time must be before end time");
+        }
+        if(schedule.getStartTime().equals(schedule.getEndTime())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("start and end time shouldn't be same");
+        }
+//        List<Schedule> conflictingSchedules = scheduleRepo.findConflictingSchedules(existingSchedule.get().getStadiumName(), schedule.getStartTime(),
+//                schedule.getEndTime(), existingSchedule.get().getStartTime(), existingSchedule.get().getEndTime(),existingSchedule.get().getId());
+
+       boolean conflictingSchedules=scheduleService.checkScheduleConflictByStadium(existingSchedule.get().getStadiumName(),schedule.getStartTime(),schedule.getEndTime());
+        if (conflictingSchedules) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Schedule conflicts with existing schedule(s)");
+        }
+        existingSchedule.get().setStartTime(schedule.getStartTime());
+        existingSchedule.get().setEndTime(schedule.getEndTime());
         scheduleRepo.save(existingSchedule.get());
         return ResponseEntity.ok(existingSchedule);
 
