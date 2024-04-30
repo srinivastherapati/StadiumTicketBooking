@@ -35,8 +35,8 @@ public class ScheduleController {
 
     @PostMapping("/add")
     public ResponseEntity<?> addSchedule(@RequestBody Schedule schedule){
-        boolean isStadiumExists=stadiumService.IsStadiumExists(schedule.getStadiumName());
-        if(!isStadiumExists){
+        Stadium isStadiumExists=stadiumService.IsStadiumExists(schedule.getStadiumName());
+        if(isStadiumExists==null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium with name " +schedule.getStadiumName() +" does not exists");
         }
         boolean isAuthorized=stadiumManagerService.isAuthorized(schedule.getStadiumManagerEmail());
@@ -65,6 +65,7 @@ public class ScheduleController {
         if (scheduleService.isScheduleConflict(schedule)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Scheduling conflict with existing game");
         }
+        schedule.setAvailableSeats(isStadiumExists.getCapacity());
         scheduleRepo.save(schedule);
 
 

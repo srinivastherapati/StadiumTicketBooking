@@ -1,9 +1,11 @@
 package com.example.StadiumBooking.Controllers;
 
 import com.example.StadiumBooking.DataModel.Customers;
+import com.example.StadiumBooking.DataModel.Schedule;
 import com.example.StadiumBooking.DataModel.Stadium;
 import com.example.StadiumBooking.DataModel.StadiumManager;
 import com.example.StadiumBooking.repositeries.CustomersRepo;
+import com.example.StadiumBooking.repositeries.ScheduleRepo;
 import com.example.StadiumBooking.repositeries.StadiumManagerRepo;
 import com.example.StadiumBooking.repositeries.StadiumRepo;
 import com.example.StadiumBooking.services.StadiumManagerService;
@@ -29,6 +31,8 @@ public class StadiumManagerController {
     private StadiumManagerService stadiumManagerService;
     @Autowired
     private CustomersRepo customersRepo;
+    @Autowired
+    private ScheduleRepo scheduleRepo;
 
     @PostMapping("/stadium-managers/register")
     public ResponseEntity<?> registerStadiumManager(@RequestBody StadiumManager stadiumManager) {
@@ -42,7 +46,7 @@ public class StadiumManagerController {
             response.put("message","manager already registered ");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
-        if(!stadiumService.IsStadiumExists(stadiumManager.getStadiumName())){
+        if(stadiumService.IsStadiumExists(stadiumManager.getStadiumName())==null){
            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium with name "+stadiumManager.getStadiumName() +" does not exists");
         }
         stadiumManager.setRole("manager");
@@ -153,6 +157,23 @@ public class StadiumManagerController {
         stadiumManagerRepository.save(manager);
         return ResponseEntity.ok(manager);
     }
+
+    @GetMapping("/getMatches/{managerEmail}")
+    public ResponseEntity<?> getMatchesByManagerEmail(@PathVariable String  managerEmail){
+        StadiumManager stadiumManager= stadiumManagerRepository.findByEmail(managerEmail);
+        if(stadiumManager==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("manager does not exists");
+        }
+
+        List<Schedule> allSchedules=scheduleRepo.findByStadiumName(stadiumManager.getStadiumName());
+        if(allSchedules.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no matches scheduled");
+        }
+        return ResponseEntity.ok(allSchedules);
+
+    }
+
+
 
 
 

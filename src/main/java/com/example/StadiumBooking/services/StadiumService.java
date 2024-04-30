@@ -16,9 +16,8 @@ public class StadiumService {
     private StadiumRepo stadiumRepo;
     @Autowired
     private ScheduleRepo scheduleRepo;
-    public boolean IsStadiumExists(String stadiumName){
-       Stadium stadium= stadiumRepo.findByName(stadiumName);
-        return stadium != null;
+    public Stadium IsStadiumExists(String stadiumName){
+        return stadiumRepo.findByName(stadiumName) ;
     }
 
 
