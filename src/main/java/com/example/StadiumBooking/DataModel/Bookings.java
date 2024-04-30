@@ -23,5 +23,6 @@ public class Bookings {
     private String seatType;
     private String gameTitle;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date startTime;
+  //  private String startTime;
+    private String scheduleId;
 }

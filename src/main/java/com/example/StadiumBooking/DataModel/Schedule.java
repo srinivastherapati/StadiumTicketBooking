@@ -24,9 +24,9 @@ public class Schedule {
     private String homeTeam;
     private String awayTeam;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date startTime;
+    private String  startTime;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date endTime;
+    private String  endTime;
     private int availableSeats;
     private int bookedSeats;
 

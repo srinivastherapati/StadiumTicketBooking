@@ -36,14 +36,15 @@ public class StadiumManagerController {
 
     @PostMapping("/stadium-managers/register")
     public ResponseEntity<?> registerStadiumManager(@RequestBody StadiumManager stadiumManager) {
-//        if(stadiumManager.getEmail().equals("admin") && stadiumManager.getPassword().equals("admin@123")){
+//        if(stadiumManager.getEmail().equals("admin@admin.com") && stadiumManager.getPassword().equals("admin@123")){
+//            stadiumManager.setRole("admin");
 //            stadiumManagerRepository.save(stadiumManager);
 //            return ResponseEntity.status(HttpStatus.CREATED).body("admin created");
 //        }
         Map<String , Object> response= new HashMap<>();
         StadiumManager existingManager=stadiumManagerRepository.findByEmail(stadiumManager.getEmail());
         if(existingManager!=null){
-            response.put("message","manager already registered ");
+            response.put("message","already registered ");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
         if(stadiumService.IsStadiumExists(stadiumManager.getStadiumName())==null){

@@ -7,11 +7,14 @@ import com.example.StadiumBooking.repositeries.StadiumRepo;
 import com.example.StadiumBooking.services.ScheduleService;
 import com.example.StadiumBooking.services.StadiumManagerService;
 import com.example.StadiumBooking.services.StadiumService;
+import org.apache.tomcat.util.json.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -50,12 +53,26 @@ public class ScheduleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("start and end time should be same");
         }
 
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+        // Parse the string to obtain a Date object
+        Date startDate=null;
+        Date endDate=null;
+        try {
+            startDate = dateFormat.parse(schedule.getStartTime());
+            System.out.println("after format===="+startDate);
+            endDate=dateFormat.parse(schedule.getEndTime());
+            //   System.out.println("Date: " + date);
+        } catch (java.text.ParseException e) {
+            // Handle the parse exception
+            e.printStackTrace();
+        }
         Date currentTime = new Date();
-        if (schedule.getStartTime().before(currentTime) || schedule.getEndTime().before(currentTime)) {
+        if (startDate.before(currentTime) || endDate.before(currentTime)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time or end time cannot be in the past");
         }
 
-        if (schedule.getStartTime().after(schedule.getEndTime())) {
+        if (startDate.after(endDate)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time must be before end time");
         }
         if(schedule.getStartTime().equals(schedule.getEndTime())){
@@ -65,6 +82,8 @@ public class ScheduleController {
         if (scheduleService.isScheduleConflict(schedule)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Scheduling conflict with existing game");
         }
+
+        System.out.println(">>>>>>>>>>"+schedule.getStartTime());
         schedule.setAvailableSeats(isStadiumExists.getCapacity());
         scheduleRepo.save(schedule);
 
@@ -78,12 +97,25 @@ public class ScheduleController {
         if(existingSchedule.isEmpty()){
            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("schedule does not exists");
         }
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+        // Parse the string to obtain a Date object
+        Date startDate=null;
+        Date endDate=null;
+        try {
+            startDate = dateFormat.parse(schedule.getStartTime());
+            endDate=dateFormat.parse(schedule.getEndTime());
+         //   System.out.println("Date: " + date);
+        } catch (java.text.ParseException e) {
+            // Handle the parse exception
+            e.printStackTrace();
+        }
         Date currentTime = new Date();
-        if (schedule.getStartTime().before(currentTime) || schedule.getEndTime().before(currentTime)) {
+        if (startDate.before(currentTime) || endDate.before(currentTime)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time or end time cannot be in the past");
         }
 
-        if (schedule.getStartTime().after(schedule.getEndTime())) {
+        if (startDate.after(endDate)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start time must be before end time");
         }
         if(schedule.getStartTime().equals(schedule.getEndTime())){
@@ -92,7 +124,7 @@ public class ScheduleController {
 //        List<Schedule> conflictingSchedules = scheduleRepo.findConflictingSchedules(existingSchedule.get().getStadiumName(), schedule.getStartTime(),
 //                schedule.getEndTime(), existingSchedule.get().getStartTime(), existingSchedule.get().getEndTime(),existingSchedule.get().getId());
 
-       boolean conflictingSchedules=scheduleService.checkScheduleConflictByStadium(existingSchedule.get().getStadiumName(),schedule.getStartTime(),schedule.getEndTime());
+       boolean conflictingSchedules=scheduleService.checkScheduleConflictByStadium(existingSchedule.get().getStadiumName(),startDate,endDate);
         if (conflictingSchedules) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Schedule conflicts with existing schedule(s)");
         }

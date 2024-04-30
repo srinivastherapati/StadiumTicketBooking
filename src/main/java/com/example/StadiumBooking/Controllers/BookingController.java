@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.util.*;
 
 @RestController
 @RequestMapping("/bookings")
@@ -37,24 +34,15 @@ public class BookingController {
     @PostMapping("/book/{stadiumId}")
     public ResponseEntity<?> startBooking(@PathVariable String stadiumId, @RequestParam String gameTitle
             , @RequestBody Bookings bookings){
-        Date startTimeDate = null;
-        System.out.println("================="+bookings.getStartTime());
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            startTimeDate = dateFormat.parse(String.valueOf(bookings.getStartTime()));
-            System.out.println("=============="+startTimeDate);
-        } catch (ParseException | java.text.ParseException e) {
-            // Handle parsing error
-            return ResponseEntity.badRequest().body("Invalid startTime format: " + bookings.getStartTime());
-        }
         Optional<Stadium> stadium=stadiumRepo.findById(stadiumId);
         if(stadium.isEmpty()){
             return ResponseEntity.notFound().build();
         }
-        Schedule schedule=scheduleRepo.findByStadiumNameAndGameTitleAndStartTime(stadium.get().getName(),gameTitle,startTimeDate);
-        if(schedule==null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no games with name " + gameTitle +" at time " +startTimeDate);
+        Optional<Schedule> existingSchedule=scheduleRepo.findById(bookings.getScheduleId());
+        if(existingSchedule.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no game scheduled ");
         }
+
         SeatType seatType=SeatType.valueOf(bookings.getSeatType());
         switch (seatType) {
             case SILVER:
@@ -74,13 +62,19 @@ public class BookingController {
         bookings.setBookingTime(Instant.now());
         bookings.setTotalAmount(bookings.getTotalAmount()* bookings.getNo_of_seats());
         bookings.setBookingStatus("booked");
-       // bookings.setStartTime(startTime);
+        // bookings.setStartTime(startTime);
         bookingsRepo.save(bookings);
-       // stadium.get().setCapacity(stadium.get().getCapacity()- bookings.getNo_of_seats());
-        schedule.setBookedSeats(bookings.getNo_of_seats());
-        schedule.setAvailableSeats(schedule.getAvailableSeats()-bookings.getNo_of_seats());
-        stadiumRepo.save(stadium.get());
+        // stadium.get().setCapacity(stadium.get().getCapacity()- bookings.getNo_of_seats());
+        if(existingSchedule.get().getBookedSeats()==0){
+            existingSchedule.get().setBookedSeats(bookings.getNo_of_seats());
+        }
+        else{
+            existingSchedule.get().setBookedSeats(existingSchedule.get().getBookedSeats()+bookings.getNo_of_seats());
+        }
+        existingSchedule.get().setAvailableSeats(existingSchedule.get().getAvailableSeats()-bookings.getNo_of_seats());
+       scheduleRepo.save(existingSchedule.get());
         return ResponseEntity.ok(bookings);
+
     }
 
     @DeleteMapping("delete/{bookingId}")
@@ -89,10 +83,16 @@ public class BookingController {
         if(bookings.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("stadium does not exist");
         }
-        bookingsRepo.delete(bookings.get());
+        Optional<Schedule> schedule=scheduleRepo.findById(bookings.get().getScheduleId());
         Stadium existingStadium=stadiumRepo.findByName(bookings.get().getStadiumName());
         existingStadium.setCapacity(existingStadium.getCapacity()+bookings.get().getNo_of_seats());
-        stadiumRepo.save(existingStadium);
+        if(schedule.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no games scheduled");
+        }
+        schedule.get().setAvailableSeats(schedule.get().getAvailableSeats()+bookings.get().getNo_of_seats());
+        schedule.get().setBookedSeats(schedule.get().getBookedSeats()-bookings.get().getNo_of_seats());
+        scheduleRepo.save(schedule.get());
+        bookingsRepo.delete(bookings.get());
         return ResponseEntity.status(HttpStatus.OK).body("booking cancelled");
 
     }
@@ -103,17 +103,13 @@ public class BookingController {
         return ResponseEntity.ok(bookingsList);
     }
 
-    @GetMapping("getBookingsByStadium/{stadiumName}")
-    public ResponseEntity<?> getBookingsByName(@PathVariable String stadiumName){
-       List<Bookings> bookings= bookingsRepo.findByStadiumName(stadiumName);
-       if(bookings.isEmpty()){
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no bookings for this stadium");
-       }
-       return ResponseEntity.ok(bookings);
-    }
+    @GetMapping("/getBookingsByMatch/{scheduleId}")
+    public ResponseEntity<?> getBookingsByMatch(@PathVariable String scheduleId){
+        List<Bookings> getAllBookings=bookingsRepo.findByScheduleId(scheduleId);
+        if(getAllBookings.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no bookings for this game");
+        }
+        return ResponseEntity.ok(getAllBookings);
 
-//    @GetMapping("/getBookingsByMatch/{scheduleId}")
-//    public ResponseEntity<?> getBookingsByMatch(@PathVariable String scheduleId){
-//
-//    }
+    }
 }

@@ -8,5 +8,6 @@ import java.util.List;
 public interface BookingsRepo extends MongoRepository<Bookings,String> {
 
     List<Bookings> findByStadiumName(String stadiumName);
+    List<Bookings> findByScheduleId(String scheduleId);
 
 }

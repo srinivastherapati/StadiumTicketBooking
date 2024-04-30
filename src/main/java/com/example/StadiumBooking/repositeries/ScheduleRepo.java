@@ -12,7 +12,8 @@ public interface ScheduleRepo extends MongoRepository<Schedule,String> {
 
    // Schedule findByStadiumName(String stadiumName);
     List<Schedule> findByStadiumName(String stadiumName);
-    Schedule findByStadiumNameAndGameTitleAndStartTime(String stadiumName, String gameTitle,Date startTime);
+    List<Schedule> findByStadiumNameAndGameTitle(String stadiumName,String gameTitle);
+    Schedule findByStadiumNameAndGameTitleAndStartTime(String stadiumName, String gameTitle,String  startTime);
     @Query("{ 'stadiumName' : ?0, " +
             "$or: [ " +
             "{ 'startTime': { $gte: ?1, $lte: ?2 } }, " +
