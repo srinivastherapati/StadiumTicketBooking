@@ -26,7 +26,7 @@ public class ScheduleService {
                 // Schedules are in different stadiums, so no conflict
                 continue;
             }
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
             // Parse the string to obtain a Date object
             Date existingStartDate=null;
@@ -59,7 +59,7 @@ public class ScheduleService {
             return false;
         }
         for(Schedule schedule:scheduleListByStadium){
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
             // Parse the string to obtain a Date object
             Date startDate=null;

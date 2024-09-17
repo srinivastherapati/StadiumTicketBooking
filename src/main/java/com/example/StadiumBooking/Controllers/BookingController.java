@@ -62,6 +62,7 @@ public class BookingController {
         bookings.setBookingTime(Instant.now());
         bookings.setTotalAmount(bookings.getTotalAmount()* bookings.getNo_of_seats());
         bookings.setBookingStatus("booked");
+        bookings.setGameTitle(existingSchedule.get().getGameTitle());
         // bookings.setStartTime(startTime);
         bookingsRepo.save(bookings);
         // stadium.get().setCapacity(stadium.get().getCapacity()- bookings.getNo_of_seats());
@@ -98,9 +99,25 @@ public class BookingController {
     }
 
     @GetMapping("/getAllBookings")
-    public ResponseEntity<List<Bookings>> getAllBookings(){
+    public ResponseEntity<List<Map<String ,String>>> getAllBookings(){
         List<Bookings> bookingsList=bookingsRepo.findAll();
-        return ResponseEntity.ok(bookingsList);
+        List<Map<String ,String >> resultList=new ArrayList<>();
+        bookingsList.forEach(bookings -> {
+           Optional<Schedule> schedule=scheduleRepo.findById(bookings.getScheduleId());
+          Map<String,String > map= new HashMap<>();
+          if(schedule.isEmpty()){
+
+              schedule.get().setStadiumName("Missouri Cricket Grounds");
+          }
+            map.put("stadiumName",schedule.get().getStadiumName());
+            map.put("gameTitle",schedule.get().getGameTitle());
+          map.put("homeTeam",schedule.get().getHomeTeam());
+            map.put("awayTeam",schedule.get().getAwayTeam());
+            map.put("bookedSeats", String.valueOf(schedule.get().getBookedSeats()));
+            map.put("availableSeats", String.valueOf(schedule.get().getAvailableSeats()));
+            resultList.add(map);
+        });
+        return ResponseEntity.ok(resultList);
     }
 
     @GetMapping("/getBookingsByMatch/{scheduleId}")
@@ -110,6 +127,5 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no bookings for this game");
         }
         return ResponseEntity.ok(getAllBookings);
-
     }
 }

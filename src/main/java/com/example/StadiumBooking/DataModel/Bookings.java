@@ -22,7 +22,7 @@ public class Bookings {
     private String bookingStatus;
     private String seatType;
     private String gameTitle;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
   //  private String startTime;
     private String scheduleId;
 }

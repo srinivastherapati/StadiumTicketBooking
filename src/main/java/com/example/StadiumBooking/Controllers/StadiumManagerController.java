@@ -57,10 +57,15 @@ public class StadiumManagerController {
     @PutMapping("/stadium-managers/approve/{managerId}")
     public ResponseEntity<String> approveManagerRequest(@PathVariable String managerId) {
         Optional<StadiumManager> optionalManager = stadiumManagerRepository.findById(managerId);
+        Map<String ,String > map= new HashMap<>();
         if (optionalManager.isPresent()) {
-            StadiumManager manager = optionalManager.get();
-            manager.setApproved(true);
-            stadiumManagerRepository.save(manager);
+            StadiumManager stadiumManager = optionalManager.get();
+            map.put("stadiumName",stadiumManager.getStadiumName());
+            map.put("name",stadiumManager.getName());
+            map.put("email",stadiumManager.getEmail());
+            map.put("phoneNumber",stadiumManager.getPhoneNumber());
+            map.put("status","approved");
+            stadiumManagerRepository.save(stadiumManager);
             return ResponseEntity.ok("Stadium manager registration approved.");
         } else {
             return ResponseEntity.notFound().build();
@@ -72,7 +77,7 @@ public class StadiumManagerController {
         String password = loginRequest.getPassword();
 
         // Check if the provided credentials match the admin credentials
-        if (email.equals("admin") && password.equals("admin@123")) {
+        if (email.equals("admin@admin.com") && password.equals("admin@123")) {
             Map<String, String> adminDetails = new HashMap<>();
             adminDetails.put("email", email);
             adminDetails.put("role", "admin");
@@ -95,6 +100,7 @@ public class StadiumManagerController {
             managerDetails.put("email", stadiumManager.getEmail());
             managerDetails.put("name", stadiumManager.getName());
             managerDetails.put("role", "manager");
+            managerDetails.put("stadiumName",stadiumManager.getStadiumName());
             return ResponseEntity.ok(managerDetails);
         }
 
@@ -118,9 +124,23 @@ public class StadiumManagerController {
     }
 
     @PostMapping("/stadium-managers/admin/approved")
-    public ResponseEntity<?> getAllApprovalRequest(){
+    public List<Map<String ,String >> getAllApprovalRequest(){
+        List<Map<String ,String >> response=new ArrayList<>();
         List<StadiumManager> pendingApprovals=stadiumManagerService.getPendingRequest();
-        return ResponseEntity.ok(pendingApprovals);
+        pendingApprovals.forEach(stadiumManager -> {
+            Map<String ,String > map= new HashMap<>();
+            map.put("stadiumName",stadiumManager.getStadiumName());
+            map.put("name",stadiumManager.getName());
+            map.put("email",stadiumManager.getEmail());
+            map.put("phoneNumber",stadiumManager.getPhoneNumber());
+            if(stadiumManager.isApproved()) {
+                map.put("status", "approved");
+            }
+            map.put("status","pending");
+            response.add(map);
+        });
+
+        return response;
     }
 
     @GetMapping("/stadium-managers/stadium/{stadiumName}/managers")
@@ -172,6 +192,16 @@ public class StadiumManagerController {
         }
         return ResponseEntity.ok(allSchedules);
 
+
+    }
+
+    @GetMapping("/getManagers")
+    public ResponseEntity<?> getAllManagers(){
+        List<StadiumManager> stadiumManager=stadiumManagerRepository.findAll();
+        if(stadiumManager.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no managers");
+        }
+        return ResponseEntity.ok(stadiumManager);
     }
 
 

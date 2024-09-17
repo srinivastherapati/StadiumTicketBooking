@@ -53,7 +53,7 @@ public class ScheduleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("start and end time should be same");
         }
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
         // Parse the string to obtain a Date object
         Date startDate=null;
@@ -86,9 +86,10 @@ public class ScheduleController {
         System.out.println(">>>>>>>>>>"+schedule.getStartTime());
         schedule.setAvailableSeats(isStadiumExists.getCapacity());
         scheduleRepo.save(schedule);
+        List<Schedule> scheduleList=scheduleRepo.findByStadiumName(schedule.getStadiumName());
 
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("scheduled successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleList);
 
     }
     @PatchMapping("/edit-schedule/{id}")
@@ -97,7 +98,7 @@ public class ScheduleController {
         if(existingSchedule.isEmpty()){
            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("schedule does not exists");
         }
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
         // Parse the string to obtain a Date object
         Date startDate=null;
